@@ -181,7 +181,7 @@ class ProfileForm extends CheckoutPaneBase {
    * {@inheritdoc}
    */
   public function buildPaneForm(array $pane_form, FormStateInterface $form_state, array &$complete_form) {
-    $profile_type = $this->getProfileType();
+    $profile_type = $this->getProfileTypeId();
 
     // This will load the first profile found if there are multiple.
     // TODO: what to do for multiple profiles?
@@ -233,12 +233,12 @@ class ProfileForm extends CheckoutPaneBase {
   }
 
   /**
-   * Gets the profile type for this plugin.
+   * Gets the profile type ID for this plugin.
    *
    * @return string
    *   The profile type ID.
    */
-  protected function getProfileType() {
+  protected function getProfileTypeId() {
     return $this->getDerivativeId();
   }
 
