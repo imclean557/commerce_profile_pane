@@ -181,20 +181,20 @@ class ProfileForm extends CheckoutPaneBase {
    * {@inheritdoc}
    */
   public function buildPaneForm(array $pane_form, FormStateInterface $form_state, array &$complete_form) {
-    $profile_type = $this->getProfileTypeId();
+    $profile_type_id = $this->getProfileTypeId();
 
     // This will load the first profile found if there are multiple.
     // TODO: what to do for multiple profiles?
     $profile = $this->entityTypeManager
       ->getStorage('profile')
-      ->loadByUser($this->currentUser, $profile_type);
+      ->loadByUser($this->currentUser, $profile_type_id);
 
     // TODO: what to do if there is no profile for the user of this type?
 
     $pane_form['profile'] = [
      '#type' => 'inline_entity_form',
      '#entity_type' => 'profile',
-     '#bundle' => $profile_type,
+     '#bundle' => $profile_type_id,
      '#form_mode' => $this->configuration['form_mode'],
      '#default_value' => $profile,
      /*
