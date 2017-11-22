@@ -97,8 +97,6 @@ class ProfilePaneCheckoutTest extends CommerceBrowserTestBase {
     ]);
   }
 
-  // TOdo  test user witout acccess
-
   /**
    * Tests a user with a profile sees it in the pane.
    */
