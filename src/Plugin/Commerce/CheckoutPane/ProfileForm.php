@@ -184,12 +184,20 @@ class ProfileForm extends CheckoutPaneBase {
     $profile_type_id = $this->getProfileTypeId();
 
     // This will load the first profile found if there are multiple.
-    // TODO: what to do for multiple profiles?
-    $profile = $this->entityTypeManager
-      ->getStorage('profile')
-      ->loadByUser($this->currentUser, $profile_type_id);
+    $profile_storage = $this->entityTypeManager->getStorage('profile');
+    $profile = $profile_storage->loadByUser($this->currentUser, $profile_type_id);
 
-    // TODO: what to do if there is no profile for the user of this type?
+    // Create a new profile entity if there is no profile for the user of this
+    // type.
+    if (empty($profile)) {
+      $profile_type = $this->entityTypeManager->getStorage('profile_type')->load($profile_type_id);
+      $profile = $profile_storage->create([
+        'type' => $profile_type_id,
+        'uid' => $this->currentUser->id(),
+        // TODO: inject.
+        'langcode' => $profile_type->language() ? $profile_type->language() : \Drupal::languageManager()->getDefaultLanguage()->getId(),
+      ]);
+    }
 
     $pane_form['profile'] = [
      '#type' => 'inline_entity_form',
