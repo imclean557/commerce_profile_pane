@@ -6,7 +6,9 @@ use Drupal\Tests\commerce\Functional\CommerceBrowserTestBase;
 use Drupal\profile\Entity\ProfileType;
 
 /**
- * Test case class TODO.
+ * Tests the profile checkout pane in the checkout flow.
+ *
+ * @group commerce_profile_pane
  */
 class ProfilePaneCheckoutTest extends CommerceBrowserTestBase {
 
