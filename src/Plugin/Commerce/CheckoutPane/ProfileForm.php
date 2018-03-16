@@ -14,13 +14,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a checkout pane with a form to edit the current user's profile.
  *
+ * This is set to be disabled by default, as otherwise new profile types will
+ * always automatically appear in checkout flows.
+ *
  * NOTE: do not put this in the 'login' checkout step, as that does not provide
  * its own submit button.
  *
  * @CommerceCheckoutPane(
  *   id = "profile_form",
  *   label = @Translation("User profile form"),
- *   default_step = "order_information",
+ *   default_step = "_disabled",
  *   wrapper_element = "fieldset",
  *   deriver = "Drupal\commerce_profile_pane\Plugin\Derivative\ProfileFormCheckoutPaneDeriver",
  * )
