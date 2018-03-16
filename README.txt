@@ -18,3 +18,6 @@ LIMITATIONS
 
 For profile types which allow multiple profile entities per user, this loads
 the first such profile found.
+
+A profile pane can not be put in the 'login' step, as that does not provide a
+submit button for the whole form.
