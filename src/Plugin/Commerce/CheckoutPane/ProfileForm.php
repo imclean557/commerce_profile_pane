@@ -253,4 +253,17 @@ class ProfileForm extends CheckoutPaneBase {
     return $this->getDerivativeId();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function calculateDependencies() {
+    return [
+      'config' => [
+        // We can rely on the form mode depending on the profile type, so no
+        // need to declare that here.
+        'core.entity_form_mode.profile.' . $this->configuration['form_mode'],
+      ],
+    ];
+  }
+
 }
