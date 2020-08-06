@@ -99,6 +99,7 @@ class ProfileForm extends CheckoutPaneBase {
     return [
       'form_mode' => 'default',
       'display_label' => 'Edit profile',
+      'summary_label' => 'Profile',
     ] + parent::defaultConfiguration();
   }
 
@@ -114,6 +115,10 @@ class ProfileForm extends CheckoutPaneBase {
     $summary .= '<br>';
     $summary .= $this->t('Display label: @label', [
       '@label' => $this->configuration['display_label'],
+    ]);
+    $summary .= '<br>';
+    $summary .= $this->t('Summary label: @label', [
+      '@label' => $this->configuration['summary_label'],
     ]);
 
     return $summary;
@@ -139,6 +144,13 @@ class ProfileForm extends CheckoutPaneBase {
       '#default_value' => $this->configuration['display_label'],
     ];
 
+    $form['summary_label'] = [
+      '#type' => 'textfield',
+      '#title' => t('Summary label'),
+      '#description' => t("The label to display to the user on the summary step."),
+      '#default_value' => $this->configuration['summary_label'],
+    ];
+    
     return $form;
   }
 
@@ -159,6 +171,7 @@ class ProfileForm extends CheckoutPaneBase {
       $values = $form_state->getValue($form['#parents']);
       $this->configuration['form_mode'] = $values['form_mode'];
       $this->configuration['display_label'] = $values['display_label'];
+      $this->configuration['summary_label'] = $values['summary_label'];
     }
   }
 
@@ -177,6 +190,11 @@ class ProfileForm extends CheckoutPaneBase {
    * {@inheritdoc}
    */
   public function getDisplayLabel() {
+    $current_uri = \Drupal::request()->getRequestUri();
+    $path_elements = explode('/', $current_uri);
+    if (end($path_elements) === 'review') {
+      return $this->configuration['summary_label'];
+    }
     return $this->configuration['display_label'];
   }
 
@@ -184,20 +202,27 @@ class ProfileForm extends CheckoutPaneBase {
    * {@inheritdoc}
    */
   public function buildPaneForm(array $pane_form, FormStateInterface $form_state, array &$complete_form) {
+
     $profile_type_id = $this->getProfileTypeId();
+    $profile_type = $this->entityTypeManager->getStorage('profile_type')->load($profile_type_id);
 
     // This will load the first profile found if there are multiple.
     $profile_storage = $this->entityTypeManager->getStorage('profile');
-    $profile = $profile_storage->loadByUser($this->currentUser, $profile_type_id);
-
+    if (!$profile_type->get('multiple') && $this->currentUser->id() > 0) {
+      $profile = $profile_storage->loadByUser($this->currentUser, $profile_type_id);
+    }
+    if ($this->order->get('field_profiles')->getValue()) {
+      $profile_id = $this->order->get('field_profiles')->getValue()[0]['target_id'];
+      $profile = $profile_storage->load($profile_id);
+    }
+    //$profile = $this->order->get('field_profiles')[0];
     // Create a new profile entity if there is no profile for the user of this
     // type.
     if (empty($profile)) {
-      $profile_type = $this->entityTypeManager->getStorage('profile_type')->load($profile_type_id);
       $profile = $profile_storage->create([
-        'type' => $profile_type_id,
-        'uid' => $this->currentUser->id(),
-        // TODO: inject.
+          'type' => $profile_type_id,
+          'uid' => $this->currentUser->id(),
+          // TODO: inject.
         'langcode' => $profile_type->language() ? $profile_type->language() : \Drupal::languageManager()->getDefaultLanguage()->getId(),
       ]);
     }
@@ -256,14 +281,22 @@ class ProfileForm extends CheckoutPaneBase {
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
-    return [
-      'config' => [
-        // We can rely on the form mode depending on the profile type, so no
-        // need to declare that here.
-        'core.entity_form_mode.profile.' . $this->configuration['form_mode'],
-      ],
-    ];
+  public function buildPaneSummary() {
+    $summary = [];
+    if ($profile_id = $this->order->get('field_profiles')->getValue()[0]['target_id']) {
+      $profile_storage = $this->entityTypeManager->getStorage('profile');
+      $profile = $profile_storage->load($profile_id);
+      $profile_view_builder = $this->entityTypeManager->getViewBuilder('profile');
+      $summary = $profile_view_builder->view($profile, 'default');
+    }
+    return $summary;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function submitPaneForm(array &$pane_form, FormStateInterface $form_state, array &$complete_form) {
+    $profile = $pane_form['profile']['#default_value'];
+    $this->order->set('field_profiles', $profile);
+  }
 }

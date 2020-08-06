@@ -7,3 +7,6 @@ commerce_checkout.commerce_checkout_pane.profile_form:
     display_label:
       type: string
       label: 'Display label'
+    summary_label:
+      type: string
+      label: 'Summary label'
